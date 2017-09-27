@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+    <script src="app/jquery/jquery-3.1.1.min.js"></script>
+    <script src="resources/js/index.js"></script>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="app/bootstrap/css/bootstrap.min.css" >
+    <link rel="stylesheet" href="resources/css/index.css">
+</head>
+<body class="jumbotron">
+<h1 class="text-center">学分计算系统</h1>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body" >
+        <p class="text-center" id="instruction">
+            1：上传统计全班成绩的excel表<b>请保证学生的重修成绩在正考成绩后面 请确保没有excel表没有空列</b>（仅支持xls，xlsx后缀的excel表）<br />(如果你已经上传过并得到了计算单元id值 直接输入id值点击获取下一步)<br/>
+            excel上传后后台会返回如样例的统计表，然后按下提示选择<br/>
+            A选择课程所在列 B选择成绩所在类 C选择学分所在列<br/>
+            选择课程列选择需要本次需要计算的课程<b>请确保事例同学的重修课程，个人选修课程被剔除</b><br/>
+            （如实例：选择了3列为课程列 第6列为成绩类 第4列为学分列 课程选择了综合课程设计和线性代数）<br>
+            选择完成后输入单科成绩的计算公式<br/>
+            单科成绩:grade 单科学分:credit 需要计算课程的总学分:sum_credit 需要计算的科目总数:course_count<br/>
+            比如一个学生的智育分是 ((课程1成绩*课程1学分)+(课程2成绩*课程2学分)···)/总学分*0.8  <br/>
+            那么单科成绩的公式转换为(grade*credit/sum_credit*0.8)
+        </p>
+    </div>
+    <div class="panel-body" style="background-color: #eee">
+        <form id="upload" >
+            <div id="before" >
+                <a href="javascript:;" class="file" id="file">选择excel文件
+                    <input type="file" name="file" >
+                </a>
+                <a href="javascript:;" class="file" onclick="uploadXls()">上传
+                </a><br />
+                计算单元id：<input type="text" value="0"  name="file_id" style="width: 100%;height: 30px;border: #e3dfe4 2px solid;border-radius: 2%;">
+                <br />
+                <br />
+                <a href="javascript:;" class="file" onclick="getMsgById()">获取下一步
+                </a>
+            </div>
+            <div id="after" hidden>
+                <p class="text-center" id="after_id"></p>
+                <br>
+                计算公式：<input type="text" value="grade*credit/sum_credit*0.8" name="formula" placeholder="输入计算公式" style="width: 100%;height: 30px;border: #e3dfe4 2px solid;border-radius: 2%;">
+                <br>
+                <br>
+                <a href="javascript:;" class="file" onclick="getResult()">确定计算
+                </a>
+            </div>
+            <div id="download" hidden>
+                <a href="javascript:;" class="file" onclick="downloadExcel()">点击下载
+                </a><br />
+            </div>
+        </form>
+    </div>
+    <div class="panel-heading text-center" style="background-color: #fff"><h3 id="prompting">参考标本</h3></div>
+    <form id="xls_msg">
+        <table class="table">
+            <tr style="background-color: rgb(238, 238, 238);" onmouseover="changeTrBackground(this)"
+                onmouseout="recovery(this)">
+                <th>选择课程</th>
+                <th><input type="radio" name="courses" value="0" onclick="paramLine(this)">A<input type="radio"
+                                                                                                   name="results"
+                                                                                                   value="0"
+                                                                                                   onclick="paramLine(this)">B<input
+                        type="radio" name="credits" value="0" onclick="paramLine(this)">C
+                </th>
+                <th><input type="radio" name="courses" value="1" onclick="paramLine(this)">A<input type="radio"
+                                                                                                   name="results"
+                                                                                                   value="1"
+                                                                                                   onclick="paramLine(this)">B<input
+                        type="radio" name="credits" value="1" onclick="paramLine(this)">C
+                </th>
+                <th><input type="radio" name="courses" value="2" onclick="paramLine(this)" checked="true">A<input type="radio"
+                                                                                                   name="results"
+                                                                                                   value="2"
+                                                                                                   onclick="paramLine(this)">B<input
+                        type="radio" name="credits" value="2" onclick="paramLine(this)">C
+                </th>
+                <th><input type="radio" name="courses" value="3" onclick="paramLine(this)">A<input type="radio"
+                                                                                                   name="results"
+                                                                                                   value="3"
+                                                                                                   onclick="paramLine(this)" checked="true">B<input
+                        type="radio" name="credits" value="3" onclick="paramLine(this)">C
+                </th>
+                <th><input type="radio" name="courses" value="4" onclick="paramLine(this)">A<input type="radio"
+                                                                                                   name="results"
+                                                                                                   value="4"
+                                                                                                   onclick="paramLine(this)">B<input
+                        type="radio" name="credits" value="4" onclick="paramLine(this)">C
+                </th>
+                <th><input type="radio" name="courses" value="5" onclick="paramLine(this)">A<input type="radio"
+                                                                                                   name="results"
+                                                                                                   value="5"
+                                                                                                   onclick="paramLine(this)">B<input
+                        type="radio" name="credits" value="5" onclick="paramLine(this)" checked="true">C
+                </th>
+                <th><input type="radio" name="courses" value="6" onclick="paramLine(this)">A<input type="radio"
+                                                                                                   name="results"
+                                                                                                   value="6"
+                                                                                                   onclick="paramLine(this)">B<input
+                        type="radio" name="credits" value="6" onclick="paramLine(this)">C
+                </th>
+                <th><input type="radio" name="courses" value="7" onclick="paramLine(this)">A<input type="radio"
+                                                                                                   name="results"
+                                                                                                   value="7"
+                                                                                                   onclick="paramLine(this)">B<input
+                        type="radio" name="credits" value="7" onclick="paramLine(this)">C
+                </th>
+                <th><input type="radio" name="courses" value="8" onclick="paramLine(this)">A<input type="radio"
+                                                                                                   name="results"
+                                                                                                   value="8"
+                                                                                                   onclick="paramLine(this)">B<input
+                        type="radio" name="credits" value="8" onclick="paramLine(this)">C
+                </th>
+                <th><input type="radio" name="courses" value="9" onclick="paramLine(this)">A<input type="radio"
+                                                                                                   name="results"
+                                                                                                   value="9"
+                                                                                                   onclick="paramLine(this)">B<input
+                        type="radio" name="credits" value="9" onclick="paramLine(this)">C
+                </th>
+                <th><input type="radio" name="courses" value="10" onclick="paramLine(this)">A<input type="radio"
+                                                                                                    name="results"
+                                                                                                    value="10"
+                                                                                                    onclick="paramLine(this)">B<input
+                        type="radio" name="credits" value="10" onclick="paramLine(this)">C
+                </th>
+                <th><input type="radio" name="courses" value="11" onclick="paramLine(this)">A<input type="radio"
+                                                                                                    name="results"
+                                                                                                    value="11"
+                                                                                                    onclick="paramLine(this)">B<input
+                        type="radio" name="credits" value="11" onclick="paramLine(this)">C
+                </th>
+                <th><input type="radio" name="courses" value="12" onclick="paramLine(this)">A<input type="radio"
+                                                                                                    name="results"
+                                                                                                    value="12"
+                                                                                                    onclick="paramLine(this)">B<input
+                        type="radio" name="credits" value="12" onclick="paramLine(this)">C
+                </th>
+                <th><input type="radio" name="courses" value="13" onclick="paramLine(this)">A<input type="radio"
+                                                                                                    name="results"
+                                                                                                    value="13"
+                                                                                                    onclick="paramLine(this)">B<input
+                        type="radio" name="credits" value="13" onclick="paramLine(this)">C
+                </th>
+            </tr>
+            <tr onmouseover="changeTrBackground(this)" onmouseout="recovery(this)" style="">
+                <th></th>
+                <th>学号</th>
+                <th>姓名</th>
+                <th>课程名称</th>
+                <th>学分</th>
+                <th>总评成绩</th>
+                <th>折算成绩</th>
+                <th>绩点</th>
+                <th>课程性质</th>
+                <th>选课课号</th>
+                <th>学年</th>
+                <th>学期</th>
+                <th>学院</th>
+                <th>专业名称</th>
+                <th>班级</th>
+            </tr>
+            <tr style="background-color: rgb(238, 238, 238);" onmouseover="changeTrBackground(this)"
+                onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="0" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>大学英语【III】</td>
+                <td>3.0</td>
+                <td>64.0</td>
+                <td>64.0</td>
+                <td>1.4</td>
+                <td>公共基础</td>
+                <td>(2016-2017-1)-10188-20070021-1</td>
+                <td>2016-2017</td>
+                <td>1.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: rgb(255, 255, 255);" onmouseover="changeTrBackground(this)"
+                onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="1" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>大学物理实验【I(1)】</td>
+                <td>1.5</td>
+                <td>72.0</td>
+                <td>72.0</td>
+                <td>2.2</td>
+                <td>公共基础</td>
+                <td>(2016-2017-1)-00071-19980005-1</td>
+                <td>2016-2017</td>
+                <td>1.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: rgb(238, 238, 238);" onmouseover="changeTrBackground(this)"
+                onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="2" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>汇编语言程序设计</td>
+                <td>3.5</td>
+                <td>39.0</td>
+                <td>39.0</td>
+                <td>0.0</td>
+                <td>专业核心</td>
+                <td>(2016-2017-1)-13844-20090031-2</td>
+                <td>2016-2017</td>
+                <td>1.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #fff;color: red;opacity: 1" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)" >
+                <td><input type="checkbox" name="column" value="3" onclick="coursesCHeck(this)" checked="true"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>综合课程设计Ⅰ</td>
+                <td>2.0</td>
+                <td>0.0</td>
+                <td>0.0</td>
+                <td>0.0</td>
+                <td>集中实践教学环节</td>
+                <td>(2016-2017-1)-13295-20130048-2</td>
+                <td>2016-2017</td>
+                <td>1.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #eee" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="4" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>大学物理学【Ⅱ（2）】</td>
+                <td>3.0</td>
+                <td>61.0</td>
+                <td>61.0</td>
+                <td>1.1</td>
+                <td>公共基础</td>
+                <td>(2016-2017-1)-12878-19870031-1</td>
+                <td>2016-2017</td>
+                <td>1.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #fff;color: red;opacity: 1" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)" >
+                <td><input type="checkbox" name="column" value="5" onclick="coursesCHeck(this)" checked="true"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>线性代数【理工】</td>
+                <td>3.0</td>
+                <td>68.0</td>
+                <td>68.0</td>
+                <td>1.8</td>
+                <td>公共基础</td>
+                <td>(2016-2017-1)-10056-20110061-1</td>
+                <td>2016-2017</td>
+                <td>1.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #eee" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="6" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>工程训练-电子技能训练I</td>
+                <td>1.0</td>
+                <td>中等</td>
+                <td>75.0</td>
+                <td>2.5</td>
+                <td>集中实践教学环节</td>
+                <td>(2016-2017-1)-10457-20090021-2</td>
+                <td>2016-2017</td>
+                <td>1.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: rgb(255, 255, 255);" onmouseover="changeTrBackground(this)"
+                onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="7" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>形势与政策[3]</td>
+                <td>0.5</td>
+                <td>合格</td>
+                <td>75.0</td>
+                <td>2.5</td>
+                <td>公共基础</td>
+                <td>(2016-2017-1)-13717-20130036-4</td>
+                <td>2016-2017</td>
+                <td>1.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: rgb(238, 238, 238);" onmouseover="changeTrBackground(this)"
+                onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="8" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>Linux基础与应用</td>
+                <td>2.5</td>
+                <td>82.0</td>
+                <td>82.0</td>
+                <td>3.2</td>
+                <td>专业类基础</td>
+                <td>(2016-2017-1)-13843-20110039-1</td>
+                <td>2016-2017</td>
+                <td>1.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: rgb(255, 255, 255);" onmouseover="changeTrBackground(this)"
+                onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="9" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>中国近现代史纲要+形势与政策</td>
+                <td>2.0</td>
+                <td>88.0</td>
+                <td>88.0</td>
+                <td>3.8</td>
+                <td>公共基础</td>
+                <td>(2016-2017-1)-10484-20130036-2</td>
+                <td>2016-2017</td>
+                <td>1.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #eee" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="10" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>大学体育【（3）】</td>
+                <td>1.0</td>
+                <td>30.0</td>
+                <td>30.0</td>
+                <td>0.0</td>
+                <td>公共基础</td>
+                <td>(2016-2017-1)-10444-19990012-10</td>
+                <td>2016-2017</td>
+                <td>1.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #fff" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="11" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>中国古代史【超星尔雅 在线自学课程】</td>
+                <td>1.0</td>
+                <td>91.77</td>
+                <td>91.8</td>
+                <td>4.18</td>
+                <td>通识教育</td>
+                <td>(2016-2017-1)-14000-20170103-1</td>
+                <td>2016-2017</td>
+                <td>1.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #eee" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="12" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>大学物理实验【I(2)】</td>
+                <td>1.5</td>
+                <td>76.0</td>
+                <td>76.0</td>
+                <td>2.6</td>
+                <td>公共基础</td>
+                <td>(2016-2017-1)-00070-20170110-1</td>
+                <td>2016-2017</td>
+                <td>1.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #fff" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="13" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>汇编语言程序设计</td>
+                <td>3.5</td>
+                <td>60.0</td>
+                <td>60.0</td>
+                <td>1.0</td>
+                <td>专业核心</td>
+                <td>(2016-2017-1)-13844-20170301-1</td>
+                <td>2016-2017</td>
+                <td>1.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #eee" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="14" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>大学英语【IV】</td>
+                <td>3.0</td>
+                <td>60.0</td>
+                <td>60.0</td>
+                <td>1.0</td>
+                <td>公共基础</td>
+                <td>(2016-2017-2)-10189-20010016-4</td>
+                <td>2016-2017</td>
+                <td>2.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #fff" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="15" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>概率论与数理统计【理工】</td>
+                <td>3.0</td>
+                <td>51.0</td>
+                <td>51.0</td>
+                <td>0.0</td>
+                <td>公共基础</td>
+                <td>(2016-2017-2)-10144-20130053-1</td>
+                <td>2016-2017</td>
+                <td>2.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #eee" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="16" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>交换与路由</td>
+                <td>3.0</td>
+                <td>56.0</td>
+                <td>56.0</td>
+                <td>0.0</td>
+                <td>专业核心</td>
+                <td>(2016-2017-2)-14205-20110061-1</td>
+                <td>2016-2017</td>
+                <td>2.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #fff" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="17" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>数据结构</td>
+                <td>4.0</td>
+                <td>60.0</td>
+                <td>60.0</td>
+                <td>1.0</td>
+                <td>专业类基础</td>
+                <td>(2016-2017-2)-03020-19900006-1</td>
+                <td>2016-2017</td>
+                <td>2.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #eee" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="18" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>数据结构课程设计【计算机类】</td>
+                <td>1.0</td>
+                <td>及格</td>
+                <td>65.0</td>
+                <td>1.5</td>
+                <td>集中实践教学环节</td>
+                <td>(2016-2017-2)-00757-19880003-2</td>
+                <td>2016-2017</td>
+                <td>2.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #fff" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="19" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>马克思主义基本原理概论+形势与政策</td>
+                <td>3.0</td>
+                <td>68.0</td>
+                <td>68.0</td>
+                <td>1.8</td>
+                <td>公共基础</td>
+                <td>(2016-2017-2)-10485-20060067-1</td>
+                <td>2016-2017</td>
+                <td>2.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #eee" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="20" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>计算机网络</td>
+                <td>3.0</td>
+                <td>69.0</td>
+                <td>69.0</td>
+                <td>1.9</td>
+                <td>专业核心</td>
+                <td>(2016-2017-2)-13068-19920025-1</td>
+                <td>2016-2017</td>
+                <td>2.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #fff" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="21" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>形势与政策[4]</td>
+                <td>0.5</td>
+                <td>合格</td>
+                <td>75.0</td>
+                <td>2.5</td>
+                <td>公共基础</td>
+                <td>(2016-2017-2)-13718-20060067-4</td>
+                <td>2016-2017</td>
+                <td>2.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #eee" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="22" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>大学生职业生涯规划</td>
+                <td>1.0</td>
+                <td>中等</td>
+                <td>75.0</td>
+                <td>2.5</td>
+                <td>通识教育</td>
+                <td>(2016-2017-2)-13247-20120041-1</td>
+                <td>2016-2017</td>
+                <td>2.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #fff" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="23" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>网络协议分析与开发课程设计</td>
+                <td>2.0</td>
+                <td>中等</td>
+                <td>75.0</td>
+                <td>2.5</td>
+                <td>集中实践教学环节</td>
+                <td>(2016-2017-2)-14212-20040041-1</td>
+                <td>2016-2017</td>
+                <td>2.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #eee" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="24" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>网络协议分析与开发</td>
+                <td>2.5</td>
+                <td>良好</td>
+                <td>85.0</td>
+                <td>3.5</td>
+                <td>专业核心</td>
+                <td>(2016-2017-2)-14204-20040041-1</td>
+                <td>2016-2017</td>
+                <td>2.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #fff" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="25" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>大学体育【（4）】</td>
+                <td>1.0</td>
+                <td>71.0</td>
+                <td>71.0</td>
+                <td>2.1</td>
+                <td>公共必修</td>
+                <td>(2016-2017-2)-10444-20040018-7</td>
+                <td>2016-2017</td>
+                <td>2.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+            <tr style="background-color: #eee" onmouseover="changeTrBackground(this)" onmouseout="recovery(this)">
+                <td><input type="checkbox" name="column" value="26" onclick="coursesCHeck(this)"></td>
+                <td>11503090201</td>
+                <td>郝伟</td>
+                <td>东方电影【超星尔雅 在线自学课程】</td>
+                <td>1.0</td>
+                <td>98.19</td>
+                <td>98.2</td>
+                <td>4.82</td>
+                <td>通识教育</td>
+                <td>(2016-2017-2)-13556-20170606-1</td>
+                <td>2016-2017</td>
+                <td>2.0</td>
+                <td>计算机科学与工程学院</td>
+                <td>网络工程</td>
+                <td>115030902</td>
+            </tr>
+        </table>
+    </form>
+</div>
+</body>
+</html>
